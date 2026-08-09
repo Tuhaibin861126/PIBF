@@ -1,0 +1,126 @@
+{
+  "model_name": "PIBF-enhanced early pregnancy loss risk model",
+  "model_version": "locked-preview-627-2026-08-09",
+  "data_status": "Internal planning model. Replace with the author-verified real-data model before publication or clinical evaluation.",
+  "intended_use": "Research implementation of a prediction model for early pregnancy loss before 16 gestational weeks among patients presenting with threatened miscarriage.",
+  "prohibited_use": "Not approved for diagnosis, triage, treatment selection, patient counseling, or autonomous clinical decision-making.",
+  "outcome": "Early pregnancy loss before 16 gestational weeks",
+  "development_sample": {
+    "n": 204,
+    "events": 51
+  },
+  "formula": "probability = sigmoid(intercept + sum(beta_i * ((x_i - mean_i) / scale_i)))",
+  "standardization": "Development-cohort StandardScaler parameters using population standard deviation (ddof=0).",
+  "features": [
+    "serum_progesterone_ng_ml",
+    "log10_beta_hcg",
+    "fetal_heartbeat_visible",
+    "crown_rump_length_mm",
+    "bleeding_grade",
+    "previous_miscarriages",
+    "subchorionic_hematoma",
+    "log_pibf"
+  ],
+  "display_labels": {
+    "serum_progesterone_ng_ml": "Serum progesterone",
+    "log10_beta_hcg": "log10 beta-hCG",
+    "fetal_heartbeat_visible": "Fetal heartbeat visible",
+    "crown_rump_length_mm": "Crown-rump length",
+    "bleeding_grade": "Bleeding grade",
+    "previous_miscarriages": "Previous miscarriages",
+    "subchorionic_hematoma": "Subchorionic hematoma",
+    "log_pibf": "Natural-log PIBF"
+  },
+  "units": {
+    "serum_progesterone_ng_ml": "ng/mL",
+    "beta_hcg_miu_ml": "mIU/mL",
+    "crown_rump_length_mm": "mm",
+    "pibf_ng_ml": "ng/mL"
+  },
+  "input_transforms": {
+    "serum_progesterone_ng_ml": "identity",
+    "log10_beta_hcg": "log10(beta_hcg_miu_ml)",
+    "fetal_heartbeat_visible": "1 if visible, otherwise 0",
+    "crown_rump_length_mm": "identity",
+    "bleeding_grade": "ordinal 1-3",
+    "previous_miscarriages": "non-negative integer count",
+    "subchorionic_hematoma": "1 if present, otherwise 0",
+    "log_pibf": "natural_log(pibf_ng_ml)"
+  },
+  "intercept": -2.370018109518611,
+  "coefficients_standardized": {
+    "serum_progesterone_ng_ml": -1.2085224637697578,
+    "log10_beta_hcg": -0.23745894963080097,
+    "fetal_heartbeat_visible": -0.5220802411875857,
+    "crown_rump_length_mm": -0.4051632309882194,
+    "bleeding_grade": 0.5553721014355429,
+    "previous_miscarriages": 0.8320810076167086,
+    "subchorionic_hematoma": 0.22035016246695696,
+    "log_pibf": -1.5268719680379348
+  },
+  "scaler_mean": {
+    "serum_progesterone_ng_ml": 20.235980392156865,
+    "log10_beta_hcg": 4.657395098039216,
+    "fetal_heartbeat_visible": 0.08823529411764706,
+    "crown_rump_length_mm": 11.869117647058824,
+    "bleeding_grade": 1.6519607843137254,
+    "previous_miscarriages": 0.6911764705882353,
+    "subchorionic_hematoma": 0.3431372549019608,
+    "log_pibf": 4.998819705882354
+  },
+  "scaler_scale": {
+    "serum_progesterone_ng_ml": 4.6408150399374515,
+    "log10_beta_hcg": 0.46177000108012584,
+    "fetal_heartbeat_visible": 0.28363678708802803,
+    "crown_rump_length_mm": 8.67601930531273,
+    "bleeding_grade": 0.7550133607643762,
+    "previous_miscarriages": 0.8787918334310977,
+    "subchorionic_hematoma": 0.47475686324718636,
+    "log_pibf": 0.7956053292267663
+  },
+  "development_reference_ranges": {
+    "serum_progesterone_ng_ml": [8.11, 32.9],
+    "beta_hcg_miu_ml": [2830.6, 501187.2],
+    "crown_rump_length_mm": [0.0, 37.8],
+    "bleeding_grade": [1, 3],
+    "previous_miscarriages": [0, 4],
+    "pibf_ng_ml": [35.0, 705.44]
+  },
+  "risk_strata": {
+    "low": {
+      "label": "Low",
+      "lower_inclusive": 0.0,
+      "upper_exclusive": 0.1
+    },
+    "intermediate": {
+      "label": "Intermediate",
+      "lower_inclusive": 0.1,
+      "upper_exclusive": 0.5
+    },
+    "high": {
+      "label": "High",
+      "lower_inclusive": 0.5,
+      "upper_inclusive": 1.0
+    }
+  },
+  "development_youden_threshold": 0.31368175954835764,
+  "validation_summary": {
+    "development_auc": 0.955914391900551,
+    "internal_validation_auc": 0.9321789321789322,
+    "center_b_external_auc": 0.9480611045828437,
+    "center_c_transport_auc": 0.9315111042087281,
+    "calibration_intercepts": {
+      "development": 0.065,
+      "internal_validation": -0.494,
+      "center_b_external": -0.122,
+      "center_c_transport": -0.241
+    },
+    "calibration_slopes": {
+      "development": 1.128,
+      "internal_validation": 0.719,
+      "center_b_external": 1.04,
+      "center_c_transport": 0.95
+    },
+    "implementation_note": "Center C showed overprediction in the high-risk stratum. Prospective validation, local recalibration, assay harmonization, and institutional approval are required before clinical implementation."
+  }
+}

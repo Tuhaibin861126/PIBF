@@ -1,0 +1,4 @@
+case_id,serum_progesterone_ng_ml,beta_hcg_miu_ml,pibf_ng_ml,fetal_heartbeat_visible,crown_rump_length_mm,bleeding_grade,previous_miscarriages,subchorionic_hematoma,expected_probability,expected_stratum
+example_low,28.0,50000.0,300.0,true,18.0,1,0,false,0.000120470604,Low
+example_intermediate,18.0,30000.0,130.0,false,10.0,2,1,true,0.415785847320,Intermediate
+example_high,10.0,10000.0,50.0,false,4.0,3,2,true,0.996935871512,High
