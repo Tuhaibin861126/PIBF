@@ -70,3 +70,10 @@ def test_current_locked_metadata() -> None:
     assert MODEL["validation_summary"]["internal_validation_auc"] == pytest.approx(0.9321789321789322)
     assert MODEL["validation_summary"]["center_b_external_auc"] == pytest.approx(0.9480611045828437)
     assert MODEL["validation_summary"]["center_c_transport_auc"] == pytest.approx(0.9315111042087281)
+
+
+def test_app_does_not_import_optional_chart_packages() -> None:
+    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    assert "import altair" not in app_source
+    assert "import pandas" not in app_source
+    assert "st.altair_chart" not in app_source

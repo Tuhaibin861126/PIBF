@@ -8,6 +8,8 @@
 - `model_coefficients.json`
 - `requirements.txt`
 
+Runtime dependency policy: `requirements.txt` directly declares Streamlit only; the application does not directly import Altair or Pandas.
+
 ## Verification files
 
 - `sample_cases.csv`

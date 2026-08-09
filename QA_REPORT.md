@@ -6,7 +6,7 @@ Date: 2026-08-09
 
 - Model JSON parsed successfully.
 - Python files compiled successfully.
-- Five automated tests passed.
+- Six automated tests passed.
 - Three synthetic reference cases reproduced their locked probabilities within an absolute tolerance of 1e-10.
 - Risk-stratum boundaries were verified at 0.10 and 0.50.
 - Bleeding grade 0 was verified as invalid.
@@ -28,6 +28,8 @@ Date: 2026-08-09
 - Input form, calculation button, risk metrics, warning panel, contribution chart, and JSON download control rendered.
 - All eight contribution labels remained visible on mobile.
 - No browser console errors were detected.
+- The contribution display rendered without direct Altair or Pandas imports.
+- A regression test prevents reintroduction of the failing optional chart imports.
 
 ## Public-package checks
 

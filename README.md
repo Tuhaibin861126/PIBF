@@ -45,13 +45,15 @@ pytest -q
 
 No secrets, database, or patient-level file is required.
 
+The application directly depends only on Streamlit. The contribution display is rendered with HTML/CSS so that the app does not directly import optional Altair or Pandas chart packages in the Streamlit Cloud runtime.
+
 ## Repository contents
 
 - `app.py`: Streamlit interface.
 - `risk_model.py`: deterministic model calculation and validation.
 - `model_coefficients.json`: coefficients, transformations, standardization parameters, risk strata, and validation summary.
 - `sample_cases.csv`: synthetic formula-check cases with expected probabilities.
-- `tests/test_risk_model.py`: unit and regression tests.
+- `tests/test_risk_model.py`: unit, formula, and cloud-dependency regression tests.
 - `QA_REPORT.md`: formula, locked-value, and responsive-interface checks.
 - `.streamlit/config.toml`: application theme and server configuration.
 - `MODEL_CARD.md`: intended use, validation, limitations, and update requirements.

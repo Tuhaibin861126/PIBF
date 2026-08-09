@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import json
+from html import escape
 
-import altair as alt
-import pandas as pd
 import streamlit as st
 
 from risk_model import MODEL, CalculatorInput, predict, result_payload
@@ -64,62 +63,134 @@ st.markdown(
         font-size: 0.82rem;
         margin-top: 1.5rem;
     }
+    .contribution-plot {
+        margin: 0.45rem 0 0.7rem 0;
+    }
+    .contribution-row {
+        display: grid;
+        grid-template-columns: minmax(120px, 175px) minmax(110px, 1fr) 58px;
+        gap: 0.55rem;
+        align-items: center;
+        margin: 0.42rem 0;
+    }
+    .contribution-label {
+        color: #52615f;
+        font-size: 0.78rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+        text-align: right;
+    }
+    .contribution-track {
+        background: #f1f4f3;
+        border: 1px solid #e2e8e6;
+        border-radius: 2px;
+        height: 18px;
+        overflow: hidden;
+        position: relative;
+    }
+    .contribution-zero {
+        background: #8f9b98;
+        bottom: 0;
+        left: 50%;
+        position: absolute;
+        top: 0;
+        width: 1px;
+        z-index: 2;
+    }
+    .contribution-bar {
+        border-radius: 2px;
+        height: 12px;
+        position: absolute;
+        top: 2px;
+    }
+    .contribution-value {
+        color: #52615f;
+        font-size: 0.75rem;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+    .contribution-axis {
+        color: #71807d;
+        display: grid;
+        font-size: 0.7rem;
+        grid-template-columns: 1fr 1fr;
+        margin: 0 66px 0.35rem 183px;
+    }
+    .contribution-axis span:last-child { text-align: right; }
+    .contribution-legend {
+        color: #52615f;
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 0.72rem;
+        gap: 0.45rem 1rem;
+        justify-content: center;
+        margin-top: 0.65rem;
+    }
+    .contribution-legend-item {
+        align-items: center;
+        display: inline-flex;
+        gap: 0.35rem;
+    }
+    .contribution-swatch {
+        border-radius: 2px;
+        display: inline-block;
+        height: 9px;
+        width: 16px;
+    }
+    @media (max-width: 640px) {
+        .contribution-row {
+            grid-template-columns: 104px minmax(80px, 1fr) 48px;
+            gap: 0.35rem;
+        }
+        .contribution-label, .contribution-value { font-size: 0.68rem; }
+        .contribution-axis {
+            margin-left: 110px;
+            margin-right: 54px;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 
-def contribution_frame(values: dict[str, float]) -> pd.DataFrame:
+def contribution_html(values: dict[str, float]) -> str:
     labels = MODEL["display_labels"]
-    rows = [
-        {
-            "Predictor": labels.get(feature, feature),
-            "Contribution": value,
-            "Direction": "Higher predicted risk" if value >= 0 else "Lower predicted risk",
-        }
-        for feature, value in values.items()
+    rows = sorted(values.items(), key=lambda item: item[1])
+    maximum = max((abs(value) for _, value in rows), default=1.0) or 1.0
+
+    output = [
+        '<div class="contribution-plot">',
+        '<div class="contribution-axis"><span>Lower risk</span><span>Higher risk</span></div>',
     ]
-    return pd.DataFrame(rows).sort_values("Contribution")
-
-
-def contribution_chart(frame: pd.DataFrame) -> alt.Chart:
-    return (
-        alt.Chart(frame)
-        .mark_bar(cornerRadiusEnd=2)
-        .encode(
-            x=alt.X(
-                "Contribution:Q",
-                title="Contribution (log-odds)",
-                axis=alt.Axis(grid=True, gridColor="#e7ecea"),
-            ),
-            y=alt.Y(
-                "Predictor:N",
-                title=None,
-                sort=None,
-                axis=alt.Axis(labelLimit=175, labelOverlap=False),
-            ),
-            color=alt.Color(
-                "Direction:N",
-                scale=alt.Scale(
-                    domain=["Higher predicted risk", "Lower predicted risk"],
-                    range=["#b33d35", "#14745a"],
-                ),
-                legend=alt.Legend(
-                    title=None,
-                    orient="bottom",
-                    direction="vertical",
-                    columns=1,
-                ),
-            ),
-            tooltip=[
-                alt.Tooltip("Predictor:N"),
-                alt.Tooltip("Contribution:Q", format=".3f"),
-                alt.Tooltip("Direction:N"),
-            ],
+    for feature, value in rows:
+        width = min(abs(value) / maximum * 48.0, 48.0)
+        left = 50.0 if value >= 0 else 50.0 - width
+        color = "#b33d35" if value >= 0 else "#14745a"
+        direction = "Higher predicted risk" if value >= 0 else "Lower predicted risk"
+        label = escape(str(labels.get(feature, feature)))
+        tooltip = escape(f"{label}: {value:+.3f} log-odds; {direction}")
+        output.append(
+            f'<div class="contribution-row" title="{tooltip}">'
+            f'<div class="contribution-label">{label}</div>'
+            '<div class="contribution-track">'
+            '<div class="contribution-zero"></div>'
+            f'<div class="contribution-bar" style="left:{left:.2f}%;width:{width:.2f}%;background:{color};"></div>'
+            '</div>'
+            f'<div class="contribution-value">{value:+.3f}</div>'
+            '</div>'
         )
-        .properties(height=300)
+    output.extend(
+        [
+            '<div class="contribution-legend">',
+            '<span class="contribution-legend-item"><span class="contribution-swatch" '
+            'style="background:#14745a"></span>Lower predicted risk</span>',
+            '<span class="contribution-legend-item"><span class="contribution-swatch" '
+            'style="background:#b33d35"></span>Higher predicted risk</span>',
+            '</div></div>',
+        ]
     )
+    return "".join(output)
 
 
 st.markdown('<div class="model-kicker">Research prediction tool</div>', unsafe_allow_html=True)
@@ -261,8 +332,10 @@ with result_column:
             st.warning(warning)
 
         st.markdown("#### Model contributions")
-        frame = contribution_frame(prediction.feature_contributions)
-        st.altair_chart(contribution_chart(frame), use_container_width=True)
+        st.markdown(
+            contribution_html(prediction.feature_contributions),
+            unsafe_allow_html=True,
+        )
         st.caption(
             "Contributions explain the fitted prediction function. They do not represent biological causality or the effect of changing a predictor."
         )
